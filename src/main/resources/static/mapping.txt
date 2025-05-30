@@ -1,0 +1,2 @@
+we use mapped by just to reference the other side also when we use this we have to both side property explicitly
+cascade.ALL is where by default when save from that table would be saved to other table.

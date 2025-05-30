@@ -1,0 +1,109 @@
+1. Understanding Flux.delayElements()
+Flux.delayElements(Duration.ofSeconds(1)) emits elements with a delay of 1 second between each.
+
+Each subscriber gets its own independent stream.
+
+Observer-1 (slow, sleep(500)) and Observer-2 (fast) both process the same delayed stream.
+
+✅ 2. Character::toUpperCase Explained
+Character::toUpperCase is a method reference.
+
+Equivalent to .map(c -> Character.toUpperCase(c)).
+
+A clean way to transform stream elements.
+
+✅ 3. map vs flatMap in Flux
+Feature	map	flatMap
+Use case	Synchronous transformation	Async or reactive transformations
+Returns	Value	Publisher (Mono/Flux)
+Example	.map(i -> i * 2)	.flatMap(i -> webClient.get(...))
+
+✅ 4. Reactive vs MVC in Spring Boot
+You can mix Spring MVC (synchronous) with reactive components like WebClient.
+
+Use Mono/Flux end-to-end in Spring WebFlux.
+
+In Spring MVC: use CompletableFuture, @Async, or WebClient with .toFuture() to get some asynchronicity.
+
+✅ 5. Why Async in MVC?
+Offloads blocking tasks from Tomcat threads.
+
+Prevents servlet thread exhaustion.
+
+Example: use @Async or CompletableFuture to run a time-consuming operation off the main thread.
+
+✅ 6. Two Patterns
+a) Parallel Async Calls
+Use Mono.zip() or CompletableFuture.allOf():
+Mono.zip(service1.call(), service2.call()).map(...)
+b) Offload Blocking Work
+@Async
+CompletableFuture<Result> longTask() { ... }
+Or:
+CompletableFuture.supplyAsync(() -> longRunningCall());
+✅ 7. CompletableFuture Execution Model
+Doesn’t wait by default — runs async.
+
+To resume flow, chain using .thenApply(), .thenCompose(), etc.
+
+Use .join() or .get() only at top level (e.g., controller) if necessary.
+
+✅ 8. Simulating Async/Await in Java
+Java lacks await, so we chain calls.
+
+Similar to async/await in concept, but flow is event-driven.
+
+Use .thenCompose() to chain dependent async calls.
+
+✅ 9. Thread Flow in CompletableFuture
+When request hits controller, a servlet thread is used.
+
+Calling async service using CompletableFuture releases that thread (if controller returns CompletableFuture).
+
+You can control thread flow using custom executors.
+
+✅ 10. WebClient Example (Blocking vs Reactive)
+You can use RestTemplate (blocking) or WebClient (non-blocking).
+
+spring-boot-starter-web only has RestTemplate by default.
+
+Add spring-boot-starter-webflux for WebClient.
+
+✅ 11. Difference: Mono/Flux vs CompletableFuture
+Feature	CompletableFuture	Mono / Flux (Reactor)
+Async?	✅	✅
+Value Count	1	Mono: 0 or 1, Flux: 0 to many
+Streaming	❌	✅ (Flux)
+Backpressure	❌	✅
+Composition	✅ (limited)	✅ (rich operators)
+
+✅ 12. Thread Flow in WebFlux
+Netty handles requests using event loop threads (e.g., reactor-http-nio-1).
+
+When a Mono or Flux is subscribed, Netty schedules the work without blocking.
+
+WebClient is non-blocking — it doesn't block the calling thread.
+
+Use .publishOn(...) and .subscribeOn(...) to control thread execution.
+
+✅ 13. Netty Thread Pool (Event Loop Model)
+Spring WebFlux is backed by Netty, which uses a fixed number of event loop threads.
+
+Threads are reused for multiple connections (unlike Tomcat’s thread-per-request model).
+
+Avoid blocking (.block(), Thread.sleep()), or use boundedElastic() for such cases.
+
+✅ 14. Thread Switching in CompletableFuture / Mono
+No automatic "return" to previous thread like await.
+
+Java uses callback chaining.
+
+Use .thenApplyAsync(..., executor) in CompletableFuture.
+
+Use .publishOn(...) / .subscribeOn(...) in Reactor to switch threads.
+
+Each .then... or .map continues when the previous future completes — doesn’t “jump back” to where it started.
+
+✅ Summary Statement
+In Spring, async can be achieved using both CompletableFuture (for MVC) and Mono/Flux (for WebFlux). You don't get implicit thread return like await in .NET, but you can chain operations and control execution threads explicitly. WebFlux, powered by Netty, offers non-blocking scalability with event-loop threads.
+
